@@ -1,0 +1,2 @@
+import EntityCrud from "./EntityCrud";
+export default function Enquiries(){return <EntityCrud title="Enquiries" endpoint="/enquiries" fields={["customerId","inventoryId","date","status","details"]}/>;}
