@@ -11,12 +11,11 @@ import axios from "axios";
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:3270/bsaadmin/api";
+  "https://bsagroup.ltd:4270/bsacoretest/api";
 
 export const ENDPOINTS = {
   auth: {
     login: "/auth/authenticate",
-    changePassword: "/auth/password",
   },
 
   users: {
@@ -24,6 +23,7 @@ export const ENDPOINTS = {
     create: "/users",
     update: (id) => `/users/${id}`,
     delete: (id) => `/users/${id}`,
+    changePassword: "/users/changepassword",
   },
 
   attendance: {
@@ -74,6 +74,10 @@ export const ENDPOINTS = {
     update: (id) => `/site-visits/${id}`,
     view: (id) => `/site-visits/${id}`,
     search: "/site-visits/search",
+  },
+
+  dashboard: {
+  statics: "/dashboard/fetchstatics",
   },
 };
 
@@ -215,10 +219,6 @@ api.interceptors.response.use(
 export const loginApi = (payload) =>
   api.post(ENDPOINTS.auth.login, payload);
 
-export const changePasswordApi = (payload) =>
-  api.put(ENDPOINTS.auth.changePassword, payload);
-
-
 /*
  * ==========================================================
  * USERS
@@ -237,6 +237,8 @@ export const updateUser = (id, payload) =>
 export const deleteUser = (id) =>
   api.delete(ENDPOINTS.users.delete(id));
 
+export const changePasswordApi = (payload) =>
+  api.put(ENDPOINTS.users.changePassword, payload);
 
 /*
  * ==========================================================
@@ -380,3 +382,13 @@ export const getSiteVisit = (id) =>
 
 export const searchSiteVisits = (params) =>
   api.get(ENDPOINTS.siteVisits.search, { params });
+
+
+/*
+ * ==========================================================
+ * DASHBOARD
+ * ==========================================================
+ */
+
+export const getDashboardStatics = () =>
+  api.get(ENDPOINTS.dashboard.statics);

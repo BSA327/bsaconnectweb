@@ -4,10 +4,9 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 
 export default function MyTasks() {
-
   const [form, setForm] = useState({
     date: "",
-    details: ""
+    details: "",
   });
 
   const [rows, setRows] = useState([]);
@@ -17,9 +16,7 @@ export default function MyTasks() {
    * Convert HTML date (yyyy-MM-dd) to API date (dd/MM/yyyy)
    * ==========================================================
    */
-
   function formatDateForApi(date) {
-
     if (!date) return null;
 
     const [year, month, day] = date.split("-");
@@ -27,15 +24,12 @@ export default function MyTasks() {
     return `${day}/${month}/${year}`;
   }
 
-
   /*
    * ==========================================================
-   * Convert API date (dd/MM/yyyy) to display format
+   * Convert API date to display format
    * ==========================================================
    */
-
   function formatDateForDisplay(date) {
-
     if (!date) return "";
 
     // Already dd/MM/yyyy
@@ -53,71 +47,63 @@ export default function MyTasks() {
     return date;
   }
 
-
   /*
    * ==========================================================
    * LOAD TASKS
    * ==========================================================
    */
-
   async function load() {
-
     try {
-
       const { data } = await getMyTasks();
 
       setRows(
         Array.isArray(data)
           ? data
-          : data.content || []
+          : data?.content || []
       );
-
     } catch (e) {
-
-      console.error("Unable to load tasks", e);
-
+      console.error(
+        "Unable to load tasks",
+        e
+      );
     }
   }
-
 
   useEffect(() => {
     load();
   }, []);
-
 
   /*
    * ==========================================================
    * SAVE TASK
    * ==========================================================
    */
-
   async function save(e) {
-
     e.preventDefault();
 
     try {
-
       const payload = {
-        date: formatDateForApi(form.date),
-        details: form.details
+        date: formatDateForApi(
+          form.date
+        ),
+        details: form.details.trim(),
       };
 
       await createTask(payload);
 
       setForm({
         date: "",
-        details: ""
+        details: "",
       });
 
       await load();
-
     } catch (e) {
-
-      console.error("Unable to create task", e);
-
+      console.error(
+        "Unable to create task",
+        e
+      );
     }
   }
-
 
   return (
     <>
@@ -126,91 +112,79 @@ export default function MyTasks() {
         subtitle="Create and manage your tasks."
       />
 
-      <div className="two-col">
+      {/* ==================================================
+          ADD TASK
+      =================================================== */}
 
-        {/* ==================================================
-            ADD TASK
-        =================================================== */}
+      <div className="panel">
+        <h3>Add Task</h3>
 
-        <div className="panel">
+        <form onSubmit={save}>
+          <div className="filter-bar">
+          <label>
+            Date
 
-          <h3>Add Task</h3>
+            <input
+              required
+              type="date"
+              value={form.date}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  date: e.target.value,
+                })
+              }
+            />
+          </label>
+          </div>
 
-          <form onSubmit={save}>
+          <label>
+            Details
 
-            <label>
-              Date
+            <textarea
+              required
+              rows="5"
+              value={form.details}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  details: e.target.value,
+                })
+              }
+            />
+          </label>
 
-              <input
-                required
-                type="date"
-                value={form.date}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    date: e.target.value
-                  })
-                }
-              />
-            </label>
+          <button
+            type="submit"
+            className="btn primary"
+          >
+            Add Task
+          </button>
+        </form>
+      </div>
 
+      {/* ==================================================
+          TASK LIST
+      =================================================== */}
 
-            <label>
-              Details
+      <div className="panel">
+        <h3>My Task List</h3>
 
-              <textarea
-                required
-                rows="5"
-                value={form.details}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    details: e.target.value
-                  })
-                }
-              />
-            </label>
+        <DataTable
+          columns={[
+            "Date",
+            "Details",
+          ]}
+          rows={rows.map((r) => [
+            formatDateForDisplay(
+              r.date || r.taskDate
+            ),
 
-
-            <button
-              type="submit"
-              className="btn primary"
-            >
-              Add Task
-            </button>
-
-          </form>
-
-        </div>
-
-
-        {/* ==================================================
-            TASK LIST
-        =================================================== */}
-
-        <div className="panel">
-
-          <h3>My Task List</h3>
-
-          <DataTable
-            columns={[
-              "Date",
-              "Details",
-              "Status"
-            ]}
-            rows={rows.map((r) => [
-              formatDateForDisplay(
-                r.date || r.taskDate
-              ),
-
-              r.details,
-
-              r.status || "Pending"
-            ])}
-          />
-
-        </div>
-
+            <div className="task-details">
+              {r.details}
+            </div>,
+          ])}
+        />
       </div>
     </>
   );

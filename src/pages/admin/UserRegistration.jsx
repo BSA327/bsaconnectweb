@@ -10,41 +10,99 @@ import DataTable from "../../components/DataTable";
 
 const emptyForm = {
   name: "",
+  gender: "",
   email: "",
   phone: "",
+  communicationAddress: "",
   username: "",
-  password: "",
   aadharNumber: "",
   joiningDate: "",
   role: "BDM",
-  active: true,
 };
 
 function formatError(error) {
   return (
     error?.response?.data?.message ||
     error?.response?.data?.error ||
-    (typeof error?.response?.data === "string" ? error.response.data : null) ||
+    (typeof error?.response?.data === "string"
+      ? error.response.data
+      : null) ||
     error?.message ||
     "Unable to complete the request."
   );
 }
 
+/*
+ * Backend:
+ * [2026, 9, 24]
+ *
+ * HTML date:
+ * 2026-09-24
+ */
+function formatDateForInput(date) {
+  if (!date) {
+    return "";
+  }
+
+  if (Array.isArray(date) && date.length >= 3) {
+    const [year, month, day] = date;
+
+    return `${year}-${String(month).padStart(2, "0")}-${String(
+      day
+    ).padStart(2, "0")}`;
+  }
+
+  if (typeof date === "string") {
+    return date.substring(0, 10);
+  }
+
+  return "";
+}
+
+/*
+ * HTML date:
+ * 2026-09-26
+ *
+ * Backend LocalDate expects:
+ * 26/09/2026
+ */
+function formatDateForBackend(date) {
+  if (!date) {
+    return null;
+  }
+
+  return date.split("-").reverse().join("/");
+}
+
 export default function UserRegistration() {
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState({ ...emptyForm });
+
   const [rows, setRows] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  /*
+   * ============================
+   * LOAD USERS
+   * ============================
+   */
   async function loadUsers() {
     setLoading(true);
     setError("");
+
     try {
       const { data } = await getUsers();
-      setRows(Array.isArray(data) ? data : data?.content || []);
+
+      setRows(
+        Array.isArray(data)
+          ? data
+          : data?.content || []
+      );
     } catch (err) {
       setError(formatError(err));
     } finally {
@@ -56,75 +114,165 @@ export default function UserRegistration() {
     loadUsers();
   }, []);
 
+  /*
+   * ============================
+   * HANDLE CHANGE
+   * ============================
+   */
   function handleChange(event) {
-    const { name, value, type, checked } = event.target;
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = event.target;
+
     setForm((current) => ({
       ...current,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
+
     setError("");
     setSuccess("");
   }
 
+  /*
+   * ============================
+   * RESET
+   * ============================
+   */
   function resetForm() {
-    setForm(emptyForm);
+    setForm({ ...emptyForm });
     setEditingId(null);
     setError("");
     setSuccess("");
   }
 
+  /*
+   * ============================
+   * EDIT USER
+   * ============================
+   */
   function startEdit(user) {
-    setEditingId(user.id ?? user.userId);
+    const employee = user.employee || {};
+
+    setEditingId(user.id);
+
     setForm({
-      name: user.name || "",
-      email: user.email || "",
-      phone: user.phone || "",
-      username: user.username || "",
-      password: "",
-      aadharNumber: user.aadharNumber || "",
-      joiningDate: user.joiningDate || "",
-      role: user.role ? String(user.role).replace("ROLE_", "").toUpperCase() : "BDM",
-      active: user.active !== false,
+      name: employee.name || "",
+
+      gender:
+        employee.gender !== null &&
+        employee.gender !== undefined
+          ? String(employee.gender)
+          : "",
+
+      email: employee.emailId || "",
+
+      phone: employee.mobileNumber || "",
+
+      communicationAddress:
+        employee.communicationAddress || "",
+
+      username: user.userName || "",
+
+      aadharNumber:
+        employee.aadharNumber || "",
+
+      joiningDate: formatDateForInput(
+        employee.joiningDate
+      ),
+
+      role: user.role
+        ? String(user.role)
+            .replace("ROLE_", "")
+            .toUpperCase()
+        : "BDM",
+
     });
+
     setError("");
     setSuccess("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
+  /*
+   * ============================
+   * SAVE USER
+   * ============================
+   */
   async function save(event) {
     event.preventDefault();
+
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
       const wasEditing = Boolean(editingId);
+
       const payload = {
         name: form.name.trim(),
+
+        gender: form.gender
+          ? Number(form.gender)
+          : null,
+
         email: form.email.trim(),
+
         phone: form.phone.trim(),
+
+        communicationAddress:
+          form.communicationAddress.trim(),
+
         username: form.username.trim(),
-        aadharNumber: form.aadharNumber.trim(),
-        joiningDate: form.joiningDate,
+
+        aadharNumber:
+          form.aadharNumber.trim(),
+
+        joiningDate: formatDateForBackend(
+          form.joiningDate
+        ),
+
         role: form.role,
-        active: form.active,
       };
 
-      // Password is required for a new user. During edit, leave it out when blank
-      // so the existing password is not replaced.
-      if (!editingId || form.password.trim()) {
-        payload.password = form.password;
+      /*
+       * NEW USER:
+       * Password = Username
+       *
+       * EDIT:
+       * Password is not sent.
+       */
+      if (!editingId) {
+        payload.password =
+          form.username.trim();
       }
 
       if (editingId) {
-        await updateUser(editingId, payload);
+        await updateUser(
+          editingId,
+          payload
+        );
       } else {
-        await createUser({ ...payload, password: form.password });
-        setSuccess("User registered successfully.");
+        await createUser(payload);
       }
 
       resetForm();
-      setSuccess(wasEditing ? "User updated successfully." : "User registered successfully.");
+
+      setSuccess(
+        wasEditing
+          ? "User updated successfully."
+          : "User registered successfully."
+      );
+
       await loadUsers();
     } catch (err) {
       setError(formatError(err));
@@ -133,82 +281,172 @@ export default function UserRegistration() {
     }
   }
 
+  /*
+   * ============================
+   * DELETE USER
+   * ============================
+   */
   async function removeUser(id) {
-    if (!id || !window.confirm("Delete this user?")) return;
+    if (
+      !id ||
+      !window.confirm(
+        "Delete this user?"
+      )
+    ) {
+      return;
+    }
 
     setError("");
     setSuccess("");
+
     try {
       await deleteUser(id);
-      if (editingId === id) resetForm();
-      setSuccess("User deleted successfully.");
+
+      if (editingId === id) {
+        resetForm();
+      }
+
+      setSuccess(
+        "User deleted successfully."
+      );
+
       await loadUsers();
     } catch (err) {
       setError(formatError(err));
     }
   }
 
+  /*
+   * ============================
+   * RENDER
+   * ============================
+   */
   return (
     <>
       <PageHeader
-        title={editingId ? "Edit User" : "User Registration"}
+        title={
+          editingId
+            ? "Edit User"
+            : "User Registration"
+        }
         subtitle="Create and manage ADMIN, CRM and BDM users."
       />
 
+      {/* MESSAGE */}
       {(error || success) && (
-        <div className={`alert ${error ? "error" : "success"}`}>
+        <div
+          className={`alert ${
+            error
+              ? "error"
+              : "success"
+          }`}
+        >
           {error || success}
         </div>
       )}
 
+      {/* ============================
+          USER FORM
+      ============================ */}
       <div className="panel">
         <div className="panel-heading">
           <div>
-            <h3>{editingId ? "Update User" : "Register New User"}</h3>
-            <p>Enter employee details and assign the application role.</p>
+            <h3>
+              {editingId
+                ? "Update User"
+                : "Register New User"}
+            </h3>
+
+            <p>
+              Enter employee details and
+              assign the application role.
+            </p>
           </div>
+
           {editingId && (
-            <button type="button" className="btn secondary" onClick={resetForm}>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={resetForm}
+            >
               Cancel Edit
             </button>
           )}
         </div>
 
-        <form className="form-grid" onSubmit={save}>
+        <form
+          className="form-grid"
+          onSubmit={save}
+        >
+          {/* NAME */}
           <label>
             Name *
-            <input name="name" value={form.name} onChange={handleChange} required />
-          </label>
 
-          <label>
-            Email *
-            <input name="email" type="email" value={form.email} onChange={handleChange} required />
-          </label>
-
-          <label>
-            Phone *
-            <input name="phone" value={form.phone} onChange={handleChange} required />
-          </label>
-
-          <label>
-            Username *
-            <input name="username" value={form.username} onChange={handleChange} required />
-          </label>
-
-          <label>
-            Password {editingId ? "(leave blank to keep current password)" : "*"}
             <input
-              name="password"
-              type="password"
-              value={form.password}
+              name="name"
+              value={form.name}
               onChange={handleChange}
-              required={!editingId}
-              autoComplete="new-password"
+              required
             />
           </label>
 
+          {/* GENDER */}
+          <label>
+            Gender *
+
+            <select
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              required
+            >
+              <option value="">
+                Select Gender
+              </option>
+
+              <option value="1">
+                Male
+              </option>
+
+              <option value="2">
+                Female
+              </option>
+            </select>
+          </label>
+
+          {/* EMAIL */}
+          <label>
+            Email *
+
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          {/* PHONE */}
+          <label>
+            Phone *
+
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          
+
+          
+
+          {/* AADHAAR */}
           <label>
             Aadhaar Number *
+
             <input
               name="aadharNumber"
               value={form.aadharNumber}
@@ -218,8 +456,10 @@ export default function UserRegistration() {
             />
           </label>
 
+          {/* JOINING DATE */}
           <label>
             Joining Date *
+
             <input
               name="joiningDate"
               type="date"
@@ -229,76 +469,205 @@ export default function UserRegistration() {
             />
           </label>
 
+          {/* USERNAME */}
+          <label>
+            Username *
+
+            <input
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          {/* ROLE */}
           <label>
             Role *
-            <select name="role" value={form.role} onChange={handleChange} required>
-              <option value="ADMIN">ADMIN</option>
-              <option value="CRM">CRM</option>
-              <option value="BDM">BDM</option>
+
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              required
+            >
+              <option value="ADMIN">
+                ADMIN
+              </option>
+
+              <option value="CRM">
+                CRM
+              </option>
+
+              <option value="BDM">
+                BDM
+              </option>
             </select>
           </label>
 
-          <label className="checkbox-field">
-            <input
-              name="active"
-              type="checkbox"
-              checked={form.active}
+          {/* COMMUNICATION ADDRESS */}
+          <label className="full-width">
+            Communication Address *
+
+            <textarea
+              name="communicationAddress"
+              value={
+                form.communicationAddress
+              }
               onChange={handleChange}
+              rows="3"
+              required
             />
-            Active User
           </label>
 
+         
+
+          {/* ACTIONS */}
           <div className="form-actions">
-            <button className="btn primary" type="submit" disabled={saving}>
-              {saving ? "Saving..." : editingId ? "Update User" : "Register User"}
+            <button
+              className="btn primary"
+              type="submit"
+              disabled={saving}
+            >
+              {saving
+                ? "Saving..."
+                : editingId
+                ? "Update User"
+                : "Register User"}
             </button>
-            <button className="btn secondary" type="button" onClick={resetForm} disabled={saving}>
+
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={resetForm}
+              disabled={saving}
+            >
               Clear
             </button>
           </div>
         </form>
       </div>
 
+      {/* ============================
+          USERS TABLE
+      ============================ */}
       <div className="panel">
         <div className="panel-heading">
           <div>
             <h3>Users</h3>
-            <p>{loading ? "Loading users..." : `${rows.length} user${rows.length === 1 ? "" : "s"}`}</p>
+
+            <p>
+              {loading
+                ? "Loading users..."
+                : `${rows.length} user${
+                    rows.length === 1
+                      ? ""
+                      : "s"
+                  }`}
+            </p>
           </div>
-          <button className="btn secondary" type="button" onClick={loadUsers} disabled={loading}>
+
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={loadUsers}
+            disabled={loading}
+          >
             Refresh
           </button>
         </div>
 
         <DataTable
-          columns={["Name", "Username", "Email", "Phone", "Role", "Joining Date", "Status", "Actions"]}
-          rows={rows.map((user) => {
-            const id = user.id ?? user.userId;
-            const role = String(user.role || "").replace("ROLE_", "").toUpperCase();
-            return [
-              user.name,
-              user.username,
-              user.email,
-              user.phone,
-              <span className={`badge role-${role.toLowerCase()}`}>{role || "-"}</span>,
-              user.joiningDate,
-              <span className={`badge ${user.active === false ? "inactive" : "active"}`}>
-                {user.active === false ? "Inactive" : "Active"}
-              </span>,
-              <div className="table-actions">
-                <button className="table-link" type="button" onClick={() => startEdit(user)}>
-                  Edit
-                </button>
-                <button
-                  className="table-link danger-text"
-                  type="button"
-                  onClick={() => removeUser(id)}
+          columns={[
+            "Name",
+            "Username",
+            "Email",
+            "Phone",
+            "Role",
+            "Joining Date",
+            "Status",
+            "Actions",
+          ]}
+          rows={rows.map(
+            (user) => {
+              const employee =
+                user.employee || {};
+
+              const id = user.id;
+
+              const role = String(
+                user.role || ""
+              )
+                .replace(
+                  "ROLE_",
+                  ""
+                )
+                .toUpperCase();
+
+              const joiningDate =
+                formatDateForInput(
+                  employee.joiningDate
+                );
+
+              return [
+                employee.name || "-",
+
+                user.userName || "-",
+
+                employee.emailId || "-",
+
+                employee.mobileNumber ||
+                  "-",
+
+                <span
+                  key={`role-${id}`}
+                  className={`badge role-${role.toLowerCase()}`}
                 >
-                  Delete
-                </button>
-              </div>,
-            ];
-          })}
+                  {role || "-"}
+                </span>,
+
+                joiningDate || "-",
+
+                <span
+                  key={`status-${id}`}
+                  className={`badge ${
+                    user.active === false
+                      ? "inactive"
+                      : "active"
+                  }`}
+                >
+                  {user.active === false
+                    ? "Inactive"
+                    : "Active"}
+                </span>,
+
+                <div
+                  key={`actions-${id}`}
+                  className="table-actions"
+                >
+                  <button
+                    className="table-link"
+                    type="button"
+                    onClick={() =>
+                      startEdit(user)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="table-link danger-text"
+                    type="button"
+                    onClick={() =>
+                      removeUser(id)
+                    }
+                  >
+                    Delete
+                  </button>
+                </div>,
+              ];
+            }
+          )}
         />
       </div>
     </>

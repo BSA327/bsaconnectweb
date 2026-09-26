@@ -5,14 +5,14 @@ import DataTable from "../../components/DataTable";
 
 export default function SiteVisits(){
   const [rows,setRows]=useState([]);
-  const [f,setF]=useState({bdmId:"",fromDate:"",toDate:""});
+  const [f,setF]=useState({userId:"",fromDate:"",toDate:""});
   async function load(){try{const {data}=await getSiteVisits();setRows(Array.isArray(data)?data:data.content||[])}catch{}}
   useEffect(()=>{load()},[]);
   async function search(){try{const {data}=await searchSiteVisits(f);setRows(Array.isArray(data)?data:data.content||[])}catch{setRows([])}}
   return <>
     <PageHeader title="Site Visits" subtitle="BDM site visits mapped to inventory. One inventory can have multiple visits."/>
     <div className="panel filter-bar">
-      <label>BDM ID<input value={f.bdmId} onChange={e=>setF({...f,bdmId:e.target.value})}/></label>
+      <label>BDM ID<input value={f.userId} onChange={e=>setF({...f,userId:e.target.value})}/></label>
       <label>From<input type="date" value={f.fromDate} onChange={e=>setF({...f,fromDate:e.target.value})}/></label>
       <label>To<input type="date" value={f.toDate} onChange={e=>setF({...f,toDate:e.target.value})}/></label>
       <button className="btn primary" onClick={search}>Search</button>

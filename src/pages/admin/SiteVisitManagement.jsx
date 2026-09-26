@@ -4,8 +4,8 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 
 export default function SiteVisitManagement(){
-  const [form,setForm]=useState({inventoryId:"",enquiryId:"",date:"",bdmId:""});
-  const [f,setF]=useState({bdmId:"",fromDate:"",toDate:""});const [rows,setRows]=useState([]);
+  const [form,setForm]=useState({inventoryId:"",enquiryId:"",date:"",userId:""});
+  const [f,setF]=useState({userId:"",fromDate:"",toDate:""});const [rows,setRows]=useState([]);
   async function save(e){e.preventDefault();await createSiteVisit(form);alert("Site visit created.");}
   async function search(){try{const {data}=await searchSiteVisits(f);setRows(Array.isArray(data)?data:data.content||[])}catch{setRows([])}}
   return <>
@@ -14,11 +14,11 @@ export default function SiteVisitManagement(){
       <label>Inventory ID<input required value={form.inventoryId} onChange={e=>setForm({...form,inventoryId:e.target.value})}/></label>
       <label>Enquiry ID<input required value={form.enquiryId} onChange={e=>setForm({...form,enquiryId:e.target.value})}/></label>
       <label>Visit Date<input required type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></label>
-      <label>BDM ID<input required value={form.bdmId} onChange={e=>setForm({...form,bdmId:e.target.value})}/></label>
+      <label>BDM ID<input required value={form.userId} onChange={e=>setForm({...form,userId:e.target.value})}/></label>
       <button className="btn primary">Create Site Visit</button>
     </form></div>
     <div className="panel filter-bar">
-      <label>BDM ID<input value={f.bdmId} onChange={e=>setF({...f,bdmId:e.target.value})}/></label>
+      <label>BDM ID<input value={f.userId} onChange={e=>setF({...f,userId:e.target.value})}/></label>
       <label>From<input type="date" value={f.fromDate} onChange={e=>setF({...f,fromDate:e.target.value})}/></label>
       <label>To<input type="date" value={f.toDate} onChange={e=>setF({...f,toDate:e.target.value})}/></label>
       <button className="btn primary" onClick={search}>Search</button>

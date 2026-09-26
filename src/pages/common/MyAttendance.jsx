@@ -23,13 +23,10 @@ export default function MyAttendance() {
     </div>
     <div className="panel">
       <DataTable
-        columns={["Date","Login","Logout","Login Location","Logout Location","Status"]}
+        columns={["Date","Login","Logout"]}
         rows={rows.map(r=>[
-          r.attendanceDate,r.loginTime,r.logoutTime,
-          r.loginLocation || `${r.loginLatitude??"-"}, ${r.loginLongitude??"-"}`,
-          r.logoutLocation || `${r.logoutLatitude??"-"}, ${r.logoutLongitude??"-"}`,
-          r.status
-        ])}
+          r.attendanceDate,r.loginTime,r.logoutTime
+         ])}
       />
     </div>
   </>;

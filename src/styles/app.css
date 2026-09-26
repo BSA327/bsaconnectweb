@@ -195,49 +195,253 @@ a {
    TOP BAR
    ========================= */
 
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
 .topbar {
-    height: 75px;
-    min-height: 75px;
+  height: 78px;
+  padding: 0 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e7ebf0;
 
-    background: white;
-    border-bottom: 1px solid #e4e7ec;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 
-    padding: 0 30px;
-
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
-.topbar small {
-    display: block;
-    color: #98a2b3;
-    font-size: 10px;
-    margin-top: 3px;
+
+/* =========================================================
+   LEFT SIDE
+   ========================================================= */
+
+.topbar-left {
+  display: flex;
+  align-items: center;
 }
+
+
+/* =========================================================
+   DATE / TIME CARD
+   ========================================================= */
+
+.datetime-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 9px 15px;
+
+  background: #f8fafc;
+  border: 1px solid #e8edf3;
+  border-radius: 12px;
+
+  transition: all 0.2s ease;
+}
+
+.datetime-card:hover {
+  background: #f1f5f9;
+  border-color: #dbe3ec;
+}
+
+
+.datetime-icon {
+  width: 36px;
+  height: 36px;
+
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #eaf1ff;
+  color: #315bd6;
+}
+
+
+.datetime-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  white-space: nowrap;
+}
+
+
+.datetime-day {
+  font-size: 14px;
+  font-weight: 600;
+  color: #172033;
+}
+
+
+.datetime-date {
+  font-size: 13px;
+  color: #64748b;
+
+  padding-left: 7px;
+  border-left: 1px solid #d9e0e8;
+}
+
+
+.datetime-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: #315bd6;
+
+  padding-left: 7px;
+  border-left: 1px solid #d9e0e8;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
 
 .profile {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 6px 10px 6px 7px;
+
+  border-radius: 13px;
+
+  transition: background 0.2s ease;
 }
 
-.avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+.profile:hover {
+  background: #f8fafc;
+}
 
-    background: #eaf0ff;
-    color: #3157d5;
 
-    display: grid;
-    place-items: center;
+.profile-avatar {
+  width: 42px;
+  height: 42px;
 
-    font-weight: 700;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #315bd6,
+    #5478e5
+  );
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  box-shadow: 0 4px 10px rgba(49, 91, 214, 0.22);
+}
+
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 140px;
+}
+
+
+.profile-info b {
+  font-size: 14px;
+  line-height: 19px;
+  color: #111827;
+}
+
+
+.profile-role {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 1px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+  box-shadow: 0 0 0 3px #dcfce7;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .topbar {
+    height: 68px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .datetime-card {
+    padding: 7px 10px;
+  }
+
+  .datetime-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .datetime-info {
+    gap: 4px;
+  }
+
+  .datetime-day {
+    display: none;
+  }
+
+  .datetime-date {
+    border-left: none;
+    padding-left: 0;
+    font-size: 12px;
+  }
+
+  .datetime-time {
+    font-size: 12px;
+  }
+
+  .profile-info {
+    display: none;
+  }
+
+  .profile {
+    padding: 0;
+  }
+
+  .profile-avatar {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 /* =========================
@@ -1051,4 +1255,17 @@ body::-webkit-scrollbar,
 
 .table-wrap::-webkit-scrollbar {
     display: none;
+}
+
+.map-link {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.map-link:hover {
+  color: #1d4ed8;
 }

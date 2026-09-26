@@ -20,7 +20,7 @@ export default function Login() {
       saveAuth(token, data.user || data);
       navigate("/dashboard");
     } catch (e) {
-      setError(e.response?.data?.message || e.message || "Login failed");
+      setError(e.response?.data?.message || e.response?.data  || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -34,11 +34,11 @@ export default function Login() {
         </div>
         <h1>BSA Connect</h1>
         <p>One workspace for all</p>
-        {/* <div className="login-points">
+        { <div className="login-points">
           <span>✓ Attendance & field tracking</span>
           <span>✓ Customer & enquiry management</span>
           <span>✓ Inventory & site visits</span>
-        </div> */}
+        </div> }
       </div>
       <form className="login-card" onSubmit={submit}>
         <span className="eyebrow">WELCOME BACK</span>
