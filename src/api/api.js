@@ -10,8 +10,7 @@ import axios from "axios";
  */
 
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://bsagroup.ltd:4270/bsacoretest/api";
+  import.meta.env.VITE_API_BASE_URL;
 
 export const ENDPOINTS = {
   auth: {
@@ -79,6 +78,25 @@ export const ENDPOINTS = {
   dashboard: {
   statics: "/dashboard/fetchstatics",
   },
+
+  projects: {
+  list: "/projects",
+  create: "/projects",
+  update: (id) => `/projects/${id}`,
+  view: (id) => `/projects/${id}`,
+},
+
+projectInventory: {
+  list: (projectId) =>`/projectinventory/project/${projectId}`,
+  create: "/projectinventory",
+  update: (id) =>`/projectinventory/${id}`,
+  view: (id) =>`/projectinventory/${id}`,
+},
+
+projectMedia: {
+  list: (projectId) => `/projectmedia/${projectId}/media`,
+  upload: (projectId) => `/projectmedia/${projectId}/media`,
+},
 };
 
 
@@ -392,3 +410,82 @@ export const searchSiteVisits = (params) =>
 
 export const getDashboardStatics = () =>
   api.get(ENDPOINTS.dashboard.statics);
+
+
+// ==========================================================
+// PROJECTS
+// ==========================================================
+
+export const getProjects = () =>
+  api.get(ENDPOINTS.projects.list);
+
+export const createProject = (payload) =>
+  api.post(ENDPOINTS.projects.create, payload);
+
+export const updateProject = (id, payload) =>
+  api.put(
+    ENDPOINTS.projects.update(id),
+    payload
+  );
+
+export const getProject = (id) =>
+  api.get(
+    ENDPOINTS.projects.view(id)
+  );
+
+
+// ==========================================================
+// PROJECT INVENTORY
+// ==========================================================
+
+export const getProjectInventory = (projectId) =>
+  api.get(
+    ENDPOINTS.projectInventory.list(projectId)
+  );
+
+export const createProjectInventory = (payload) =>
+  api.post(
+    ENDPOINTS.projectInventory.create,
+    payload
+  );
+
+export const updateProjectInventory = (
+  id,
+  payload
+) =>
+  api.put(
+    ENDPOINTS.projectInventory.update(id),
+    payload
+  );
+
+export const getProjectInventoryById = (id) =>
+  api.get(
+    ENDPOINTS.projectInventory.view(id)
+  );
+
+
+  // ==========================================================
+// PROJECT MEDIA
+// ==========================================================
+
+export const getProjectMedia = (projectId) =>
+  api.get(ENDPOINTS.projectMedia.list(projectId));
+
+export const uploadProjectMedia = (projectId, files) => {
+
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("file", file);
+  });
+
+  return api.post(
+    ENDPOINTS.projectMedia.upload(projectId),
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+};

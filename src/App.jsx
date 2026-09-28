@@ -20,6 +20,9 @@ import AttendanceSearch from "./pages/admin/AttendanceSearch";
 import TaskSearch from "./pages/admin/TaskSearch";
 import SiteVisitManagement from "./pages/admin/SiteVisitManagement";
 import Loader from "./components/common/Loader";
+import Projects from "./pages/crm/Projects";
+import ProjectInventory from "./pages/crm/ProjectInventory";
+import ProjectMedia from "./pages/crm/ProjectMedia";
 
 function Protected() {
   return isLoggedIn() ? <Layout /> : <Navigate to="/login" replace />;
@@ -66,6 +69,9 @@ const [loading, setLoading] = useState(false);
         <Route path="/admin/attendance" element={<AttendanceSearch />} />
         <Route path="/admin/tasks" element={<TaskSearch />} />
         <Route path="/admin/site-visits" element={<SiteVisitManagement />} />
+        <Route path="/projects" element={<Projects />}/>
+        <Route path="/projects/:projectId/inventory" element={<ProjectInventory />}/>
+        <Route path="/projects/:projectId/media" element={<ProjectMedia />}/>
       </Route>
       <Route
         path="*"
